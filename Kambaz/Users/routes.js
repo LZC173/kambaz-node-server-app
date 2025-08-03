@@ -136,25 +136,34 @@ export default function UserRoutes(app) {
   };
   app.post("/api/users/current/enrollments", enrollCurrentUser);
 
-  // 
-  const getEnrollmentForCourse = (req, res) => {
-    const currentUser = req.session["currentUser"];
-    if (!currentUser) {
-      res.sendStatus(401);
-      return;
-    }
-    const { courseId } = req.params;
-    const enrollment = enrollmentsDao.findEnrollment(currentUser._id, courseId);
-    if (!enrollment) {
-      res.sendStatus(404);
-      return;
-    }
-    res.json(enrollment);
-  };
-  app.get(
-    "/api/users/current/enrollments/:courseId",
-    getEnrollmentForCourse
+const getEnrollmentForCourse = (req, res) => {
+  const currentUser = req.session?.currentUser;
+  if (!currentUser) {
+    return res.sendStatus(401);
+  }
+  const { courseId } = req.params;
+  const enrollment = enrollmentsDao.findEnrollmentForUserCourse(
+    currentUser._id,
+    courseId
   );
+  if (!enrollment) {
+    return res.sendStatus(404);
+  }
+  res.json(enrollment);
+};
+app.get("/api/users/current/enrollments/:courseId", getEnrollmentForCourse);
+
+
+  // 
+const getEnrollmentsForCurrentUser = (req, res) => {
+  const currentUser = req.session?.currentUser;
+  if (!currentUser) {
+    return res.sendStatus(401);
+  }
+  const enrollments = enrollmentsDao.findEnrollmentsForUser(currentUser._id);
+  res.json(enrollments);
+};
+app.get("/api/users/current/enrollments", getEnrollmentsForCurrentUser);
 
   // unenroll current user by enrollmentId
   const unenrollCurrentUser = (req, res) => {
