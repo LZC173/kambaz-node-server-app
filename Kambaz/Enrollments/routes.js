@@ -24,4 +24,14 @@ export default function EnrollmentRoutes(app) {
     const status = enrollmentsDao.unenrollUserInCourse(enrollment._id); // boolean
     res.send(status);
   });
+
+  
+app.get("/api/users/current/enrollments", (req, res) => {
+  const currentUser = req.session?.currentUser; 
+  if (!currentUser) {
+    return res.status(401).send({ error: "Not signed in" });
+  }
+  const enrollments = enrollmentsDao.findEnrollmentsForUser(currentUser._id);
+  res.send(enrollments);
+});
 }
