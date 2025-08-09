@@ -33,9 +33,13 @@ const app = express()
 app.use(
   cors({
     credentials: true,
+    
     origin: process.env.NETLIFY_URL || "http://localhost:5173",
   })
 );
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 // support cookies
 // restrict cross origin resource
