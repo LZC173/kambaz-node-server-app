@@ -16,6 +16,7 @@ const CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING || "mongodb://127.
 mongoose.connect(CONNECTION_STRING);
 
 
+
 (async () => {
   try {
     const masked = CONNECTION_STRING.replace(/\/\/([^:]+):[^@]+@/, "//$1:****@");
@@ -33,13 +34,9 @@ const app = express()
 app.use(
   cors({
     credentials: true,
-    
     origin: process.env.NETLIFY_URL || "http://localhost:5173",
   })
 );
-if (process.env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
-}
 
 // support cookies
 // restrict cross origin resource
@@ -50,6 +47,12 @@ const sessionOptions = {
   secret: process.env.SESSION_SECRET || "kambaz",
   resave: false,
   saveUninitialized: false,
+  proxy: true,
+  cookie: {
+    secure: true, 
+    sameSite: "none", 
+    maxAge: 1000 * 60 * 60 * 24
+  }
 };
 if (process.env.NODE_ENV !== "development") {
   sessionOptions.proxy = true;
@@ -57,9 +60,12 @@ if (process.env.NODE_ENV !== "development") {
     sameSite: "none",
     secure: true,
     domain: process.env.NODE_SERVER_DOMAIN,
+    
   };
 }
+app.set("trust proxy", 1)
 app.use(session(sessionOptions));
+
 
 // configure cors first
 // configure server sessions after cors
