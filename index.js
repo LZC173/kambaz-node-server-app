@@ -20,11 +20,11 @@ mongoose.connect(CONNECTION_STRING);
 (async () => {
   try {
     const masked = CONNECTION_STRING.replace(/\/\/([^:]+):[^@]+@/, "//$1:****@");
-    console.log("🔎 Trying MongoDB:", masked);
+    console.log("Trying MongoDB:", masked);
     await mongoose.connect(CONNECTION_STRING, { serverSelectionTimeoutMS: 10000 });
-    console.log("✅ Mongo connected:", { host: mongoose.connection.host, db: mongoose.connection.name });
+    console.log("mongo connected:", { host: mongoose.connection.host, db: mongoose.connection.name });
   } catch (e) {
-    console.error("❌ Mongo connect error:", e.message);
+    console.error("Mongo connect error:", e.message);
   }
 })();
 
