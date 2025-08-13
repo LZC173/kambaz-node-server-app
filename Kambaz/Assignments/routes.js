@@ -2,7 +2,22 @@
 import * as assignmentsDao from "./dao.js";
 
 export default function AssignmentRoutes(app) {
-
+const toUTCDate = (s) => {
+  if (!s) return undefined;                
+  if (s instanceof Date) return s;         
+  if (typeof s === "string") {
+    return s.length <= 10                  
+      ? new Date(`${s}T00:00:00Z`)
+      : new Date(s);                      
+  }
+  return undefined;
+};
+const normalizeIn = (p = {}) => ({
+  ...p,
+  availableFrom:  toUTCDate(p.availableFrom),
+  availableUntil: toUTCDate(p.availableUntil),
+  dueDate:        toUTCDate(p.dueDate),
+});
 
   app.get("/api/courses/:courseId/assignments", async (req, res) => {
     try {
@@ -19,7 +34,7 @@ export default function AssignmentRoutes(app) {
   app.post("/api/courses/:courseId/assignments", async (req, res) => {
     try {
       const { courseId } = req.params;
-      const payload = { ...req.body, course: courseId };
+      const payload = normalizeIn({ ...req.body, course: courseId });
       const newAssignment = await assignmentsDao.createAssignment(payload);
       res.status(201).json(newAssignment);
     } catch (err) {
@@ -43,15 +58,11 @@ export default function AssignmentRoutes(app) {
 
   app.put("/api/assignments/:assignmentId", async (req, res) => {
     try {
-      const { assignmentId } = req.params;
-      const result = await assignmentsDao.updateAssignment(assignmentId, req.body);
-
-      const matched =
-        (result && typeof result.matchedCount === "number" ? result.matchedCount : result?.n) ?? 0;
-
-      if (matched === 0) return res.sendStatus(404);
-
-      res.json(result);
+          const { assignmentId } = req.params;
+    const updates = normalizeIn(req.body);
+    const updated = await assignmentsDao.findByIdAndUpdateReturning(assignmentId, updates);
+    if (!updated) return res.sendStatus(404);
+    res.json(updated); //
     } catch (err) {
       console.error("updateAssignment error:", err);
       res.sendStatus(500);
