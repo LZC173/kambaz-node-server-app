@@ -27,7 +27,3 @@ export function updateAssignment(assignmentId, assignmentUpdates) {
 export function deleteAssignment(assignmentId) {
   return model.deleteOne({ _id: assignmentId });
 }
-
-export function findByIdAndUpdateReturning(id, updates) {
-  return model.findByIdAndUpdate(id, { $set: updates }, { new: true, runValidators: true });
-}

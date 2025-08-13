@@ -16,13 +16,4 @@ const assignmentSchema = new mongoose.Schema(
   { collection: "assignments" }
 );
 
-assignmentSchema.set("toJSON", {
-  transform: (_doc, ret) => {
-    const fmt = (d) => (d instanceof Date ? d.toISOString().slice(0, 10) : d);
-    ret.availableFrom  = fmt(ret.availableFrom);
-    ret.availableUntil = fmt(ret.availableUntil);
-    ret.dueDate        = fmt(ret.dueDate);
-    return ret;
-  }
-});
 export default assignmentSchema;

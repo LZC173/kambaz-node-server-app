@@ -17,16 +17,16 @@ mongoose.connect(CONNECTION_STRING);
 
 
 
-(async () => {
-  try {
-    const masked = CONNECTION_STRING.replace(/\/\/([^:]+):[^@]+@/, "//$1:****@");
-    console.log("Trying MongoDB:", masked);
-    await mongoose.connect(CONNECTION_STRING, { serverSelectionTimeoutMS: 10000 });
-    console.log("mongo connected:", { host: mongoose.connection.host, db: mongoose.connection.name });
-  } catch (e) {
-    console.error("Mongo connect error:", e.message);
-  }
-})();
+//(async () => {
+ // try {
+  //  const masked = CONNECTION_STRING.replace(/\/\/([^:]+):[^@]+@/, "//$1:****@");
+   // console.log("Trying MongoDB:", masked);
+ //   await mongoose.connect(CONNECTION_STRING, { serverSelectionTimeoutMS: 10000 });
+//    console.log("mongo connected:", { host: mongoose.connection.host, db: mongoose.connection.name });
+///  } catch (e) {
+//    console.error("Mongo connect error:", e.message);
+//  }
+//})();
 
 
 
@@ -43,17 +43,41 @@ app.use(
 // sharing to the react application
 app.use(express.json());
 
-const sessionOptions = {
-  secret: process.env.SESSION_SECRET || "kambaz",
-  resave: false,
-  saveUninitialized: false,
-  proxy: true,
-  cookie: {
-    secure: true, 
-    sameSite: "none", 
-    maxAge: 1000 * 60 * 60 * 24
-  }
-};
+let sessionOptions;
+
+if (process.env.NODE_ENV !== "development") {
+  // production
+  sessionOptions = {
+    secret: process.env.SESSION_SECRET || "kambaz",
+    resave: false,
+    saveUninitialized: false,
+    proxy: true,
+    cookie: {
+      secure: true,
+      sameSite: "none",
+      maxAge: 1000 * 60 * 60 * 24,
+      ...(process.env.NODE_SERVER_DOMAIN
+        ? { domain: process.env.NODE_SERVER_DOMAIN }
+        : {}),
+    },
+  };
+
+  app.set("trust proxy", 1);
+} else {
+
+  sessionOptions = {
+    secret: process.env.SESSION_SECRET || "kambaz",
+    resave: false,
+    saveUninitialized: false,
+    proxy: false,
+    cookie: {
+      secure: false,      
+      sameSite: "lax",    
+      maxAge: 1000 * 60 * 60 * 24,
+    },
+  };
+}
+
 if (process.env.NODE_ENV !== "development") {
   sessionOptions.proxy = true;
   sessionOptions.cookie = {
